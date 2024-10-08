@@ -1,0 +1,11 @@
+%dw 2.0
+
+type auto_6740176c_f6e7_4ea4_9244_3bf48cc3e5eb_Output_Variables_body = {|
+  name: Any, 
+  topic: Any, 
+  potentialCustomer: Any, 
+  status: 2 | 1 | 0, 
+  estRevenue: Number, 
+  actualCloseDate: Any
+|}
+

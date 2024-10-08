@@ -1,0 +1,20 @@
+environment:
+  logging:
+    level: 'DEBUG'
+
+https:
+  port: '8083'  
+  
+httpsreqsf:
+  path: '/api'
+  host: 'sf-sapi-bp.us-e2.cloudhub.io'
+  port: '443'  
+
+httpsreqdyn:
+  path: '/api'
+  host: 'dyn-sapi.us-e2.cloudhub.io'
+  port: '443'
+  
+keystore:
+  path: 'sapidatabase.jks'
+  alias: 'mule'

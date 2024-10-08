@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<sub-flow name="post-contact-sf-dyn-flow" doc:id="69374ce1-2ede-4dd0-a3f0-f87a1a767579">
+		<ee:transform doc:name="Contact mapping DYN Create" doc:id="4084de28-fb0e-4270-98fd-f6e8e81663fd">
+					<ee:message>
+					</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="createContact" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"firstname": payload.firstName,
+	"lastname": payload.lastName,
+	"parentcustomerid_account@odata.bind": "/accounts(" ++ vars.account.dynId ++ ")",
+	"callback": payload.contactSfId
+}]]></ee:set-variable>
+			</ee:variables>
+				</ee:transform>
+		<ee:transform doc:name="POST Contact DYN Request vars" doc:id="899b2b35-aee0-4199-92da-8fe5e34a882d">
+			<ee:message />
+			<ee:variables>
+				<ee:set-variable variableName="path"><![CDATA["/contact"]]></ee:set-variable>
+				<ee:set-variable variableName="body"><![CDATA[vars.createContact]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="post-request-dyn-connector-subflow" doc:id="7539af5c-1509-45ea-806b-665e182de452" name="post-request-dyn-connector-subflow" target="dynContact"/>
+		<ee:transform doc:name="Contact mapping SF Update" doc:id="888f6851-7625-4122-a749-721500ee4f2a" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Id": payload.contactSfId,
+	"FirstName": payload.firstName,
+	"LastName": payload.lastName,
+	"AccountId": vars.account.sfId,
+	"ExternalId__c": vars.dynContact.contactDynId
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="POST Contact SF Request vars" doc:id="7e918315-4a65-4650-81f2-8191acd36c71" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable variableName="path" ><![CDATA["/contact"]]></ee:set-variable>
+				<ee:set-variable variableName="body" ><![CDATA[payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="post-request-sf-connector-subflow" doc:id="d642d012-0b63-40af-8367-8225a8ff4a97" name="post-request-sf-connector-subflow" />
+	</sub-flow>
+	<sub-flow name="put-contact-sf-dyn-flow" doc:id="8aa19d28-657f-4a34-88cf-01d6e999b793">
+		<ee:transform doc:name="Contact mapping DYN Update" doc:id="002991a7-c750-451f-bc40-52237bfbe34e">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"firstName": payload.firstName,
+	"lastName": payload.lastName,
+	"accountId": vars.account.dynId,
+	"callback": payload.contactSfId
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+		<ee:transform doc:name="PUT Contact DYN Request vars" doc:id="3a34a2bb-e843-4e25-b76f-56b6f9e1f4cf">
+			<ee:message />
+			<ee:variables>
+				<ee:set-variable variableName="path"><![CDATA["/contact/{ID}"]]></ee:set-variable>
+				<ee:set-variable variableName="body"><![CDATA[payload]]></ee:set-variable>
+				<ee:set-variable variableName="uriParam"><![CDATA[output application/java
+---
+{
+	"ID" : vars.contact.id
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="put-request-dyn-connector-subflow" doc:id="7a64e2d4-3b25-4484-a5ec-a46578abd0f4" name="put-request-dyn-connector-subflow" />
+	</sub-flow>
+	<sub-flow name="break-loop-contact-flow" doc:id="70d2639e-4ae1-460d-8f70-8e5f3b7029de">
+		<logger level="INFO" doc:name="Log Contact is unchanged" doc:id="b76779e2-8215-4577-ba06-b023983c0e18" message='#[%dw 2.0&#10;output application/json&#10;---&#10;{&#10;	"message": "Contact is unchanged"&#10;}]'/>
+	</sub-flow>
+	<sub-flow name="post-contact-dyn-sf-flow" doc:id="d7b269fd-a8d8-4c6b-ae05-53f853105018">
+		<ee:transform doc:name="Contact mapping SF Create" doc:id="7de0a955-718f-4d1a-8c5f-d17007575ad8">
+					<ee:message>
+					</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="createContact" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"FirstName": payload.firstName,
+	"LastName": payload.lastName,
+	"AccountId": vars.account.sfId,
+	"ExternalId__c": payload.contactDynId
+}]]></ee:set-variable>
+			</ee:variables>
+				</ee:transform>
+		<ee:transform doc:name="POST Contact SF Request vars" doc:id="f59bc046-f974-492c-aa12-63ea7aeeea7b">
+			<ee:message />
+			<ee:variables>
+				<ee:set-variable variableName="path"><![CDATA["/contact"]]></ee:set-variable>
+				<ee:set-variable variableName="body"><![CDATA[vars.createContact]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="post-request-sf-connector-subflow" doc:id="2132d42d-39f7-419c-8bed-106bd3cd0f4d" name="post-request-sf-connector-subflow" target="sfContact"/>
+		<ee:transform doc:name="Contact mapping DYN Update" doc:id="9d25e717-002f-430b-b223-ffd2f8c1857a" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"firstName": payload.firstName,
+	"lastName": payload.lastName,
+	"accountId": vars.account.dynId,
+	"callback": vars.sfContact.contactSfId
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="PUT Contact DYN Request vars" doc:id="49cf160b-d7a9-480a-9480-5a47970c0ca1" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable variableName="path" ><![CDATA["/contact/{ID}"]]></ee:set-variable>
+				<ee:set-variable variableName="body" ><![CDATA[payload]]></ee:set-variable>
+				<ee:set-variable variableName="uriParam" ><![CDATA[output application/java
+---
+{
+	"ID" : vars.createContact.ExternalId__c
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="put-request-dyn-connector-subflow" doc:id="bb92d5f7-d042-4383-86e2-a6e65c82bef1" name="put-request-dyn-connector-subflow" />
+	</sub-flow>
+	<sub-flow name="put-contact-dyn-sf-flow" doc:id="01660c49-7d22-4af4-9471-10a27ba3a161" >
+		<ee:transform doc:name="Contact mapping SF Update" doc:id="da9fb962-3236-4e16-9cde-b0d8a3e380b5">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Id": vars.contact.id,
+	"FirstName": payload.firstName,
+	"LastName": payload.lastName,
+	"AccountId": vars.account.sfId,
+	"ExternalId__c": payload.contactDynId
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+		<ee:transform doc:name="POST Contact SF Request vars" doc:id="19eaf18f-6f5e-472d-9b59-3602373273f6">
+			<ee:message />
+			<ee:variables>
+				<ee:set-variable variableName="path"><![CDATA["/contact"]]></ee:set-variable>
+				<ee:set-variable variableName="body"><![CDATA[payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="post-request-sf-connector-subflow" doc:id="eb7d5c2b-a265-4b39-91b1-3d454e41d1a4" name="post-request-sf-connector-subflow" />
+	</sub-flow>
+</mule>

@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="sf-test.xml" />
+	<munit:test name="dyn-sf-post-test" doc:id="7804bad8-0727-49c1-9e91-2a1044964665">
+		<munit:enable-flow-sources>
+			<munit:enable-flow-source value="post-account-dyn-sf-flow" />
+		</munit:enable-flow-sources>
+		<munit:behavior>
+			<munit-tools:mock-when doc:name="GET Account SF Request" doc:id="26e64692-f0d3-4daf-9cc1-b51fe6fff941" processor="http:request">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="7de42411-9059-456b-a984-7e59669d50aa" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value="#[%dw 2.0&#10;output application/java&#10;---&#10;null]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="POST Account SF Request" doc:id="3d38ebed-2338-4d90-9d6b-391be93deaf9" processor="http:request">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="0c6aef32-9bd7-4b25-8999-7160fa93130d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value='#[%dw 2.0&#10;import sfAccount from targetModel::sfResponse&#10;output application/json&#10;---&#10;sfAccount("monica@monica.com", "1321313")]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="PUT Account DYN Request" doc:id="25809f54-9840-4c77-9740-78fb7e18b562" processor="http:request">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="08babbac-b597-471d-aa18-448b76a0f3d0" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value='#[%dw 2.0&#10;import dynAccount from targetModel::dynResponse&#10;output application/json&#10;---&#10;dynAccount("monica@monica.com", "1321313")]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock CSV file" doc:id="d1fbbe28-6511-474f-9127-2e77a69e3a9f" processor="file:write" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="7bf76263-1a1d-43cb-acd6-149aa7a2e855" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[%dw 2.0&#10;output application/csv header=false&#10;---&#10;{&#10;	accountName: &quot;Monica d.o.o.&quot;,&#10;	sfId: &quot;001Qy00000UIRIsIAP&quot;,&#10;	dynId: &quot;fefde7b6-d774-ef11-a670-002248a3d295&quot;,&#10;	timeUpdated: now() as DateTime {format: 'yyyy-MM-dd HH:mm:ss'}&#10;}]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<munit:set-event doc:name="Set Request from DYN" doc:id="7b546d60-2441-485d-9f35-9c91be059a50">
+				<munit:payload value='#[%dw 2.0&#10;import requestAccount from cmd::sfRequest&#10;output application/json&#10;---&#10;requestAccount("monica@monica.com", "1321313", "")]' />
+			</munit:set-event>
+			<flow-ref doc:name="dyn-sf-account-flow" doc:id="3f0487c4-340a-4ca8-93f3-e02a438f32a7" name="dyn-sf-account-flow" />
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="Verify GET Account SF Request" doc:id="de21741e-7cc6-46ef-a2c3-a09785ab22ef" processor="http:request" times="#[1]">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="7de42411-9059-456b-a984-7e59669d50aa" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify POST Account SF Request" doc:id="facd57c3-2695-421a-80a8-25dab502a435" processor="http:request" times="#[1]">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="0c6aef32-9bd7-4b25-8999-7160fa93130d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify PUT Account DYN Request" doc:id="c74d1404-3496-4142-a049-80e48ec9071e" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="08babbac-b597-471d-aa18-448b76a0f3d0" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:assert-equals doc:name="GET Account SF Request" doc:id="c25dd58c-a3bb-4574-ab67-3cfece75fe1d" actual="#[vars.account]" expected="#[null]" />
+			<munit-tools:assert-equals doc:name="Assert POST Account SF" doc:id="78292a69-d507-4e68-8fa5-395d1afb643d" actual="#[vars.createAccount]" expected='#[%dw 2.0&#10;import sfAccountMapping from cmd::sfRequest&#10;output application/java&#10;---&#10;sfAccountMapping("monica@monica.com", "1321313")]'/>
+			<munit-tools:assert-equals doc:name="PUT DYN Account" doc:id="da29597b-bbf1-4a3a-9a25-128f59bac084" actual="#[payload]" expected='#[%dw 2.0&#10;import dynAccount from targetModel::dynResponse&#10;output application/java&#10;---&#10;dynAccount("monica@monica.com", "1321313")]' />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="dyn-sf-put-test" doc:id="ce1bb248-d5be-4856-8983-b19ff900bca4">
+		<munit:enable-flow-sources>
+			<munit:enable-flow-source value="put-account-dyn-sf-flow" />
+		</munit:enable-flow-sources>
+		<munit:behavior>
+			<munit-tools:mock-when doc:name="GET Account SF Request" doc:id="edc40a41-0860-48e0-8fa8-2d2f13de54f7" processor="http:request">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="7de42411-9059-456b-a984-7e59669d50aa" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value='#[%dw 2.0&#10;import sfAccount from targetModel::sfResponse&#10;output application/json&#10;---&#10;sfAccount("monica@monica.com", "1321313")]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="PUT Account SF Request" doc:id="39e51f7b-b4b5-4bd5-9f56-97698a31223c" processor="http:request">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="0c6aef32-9bd7-4b25-8999-7160fa93130d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value='#[%dw 2.0&#10;import sfAccount from targetModel::sfResponse&#10;output application/json&#10;---&#10;sfAccount("monica2@monica.com", "222222")]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock CSV file" doc:id="58efe04f-1ea3-43b2-a760-ef89a2d6f2f4" processor="file:write" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="7bf76263-1a1d-43cb-acd6-149aa7a2e855" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[%dw 2.0&#10;output application/csv header=false&#10;---&#10;{&#10;	accountName: &quot;Monica d.o.o.&quot;,&#10;	sfId: &quot;001Qy00000UIRIsIAP&quot;,&#10;	dynId: &quot;fefde7b6-d774-ef11-a670-002248a3d295&quot;,&#10;	timeUpdated: now() as DateTime {format: 'yyyy-MM-dd HH:mm:ss'}&#10;}]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<munit:set-event doc:name="Set Request from DYN" doc:id="7134d77f-3b81-4eb2-bac5-5cac62f78a46">
+				<munit:payload value='#[%dw 2.0&#10;import requestAccount from cmd::sfRequest&#10;output application/json&#10;---&#10;requestAccount("1321313", "monica@monica.com", "001Qy00000UIRIsIAP")]' />
+			</munit:set-event>
+			<flow-ref doc:name="dyn-sf-account-flow" doc:id="7eddd245-c54b-4ce4-8136-37e7c623e032" name="dyn-sf-account-flow" />
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="Verify GET Account SF Request" doc:id="4ea1e817-b665-4781-8a5b-4b761227f112" processor="http:request" times="#[1]">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="7de42411-9059-456b-a984-7e59669d50aa" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify PUT Account SF Request" doc:id="2ecbde6e-f71d-449d-a1ac-6a87fce6064f" processor="http:request" times="#[1]">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="0c6aef32-9bd7-4b25-8999-7160fa93130d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:assert-equals doc:name="GET Account SF Request" doc:id="870e477b-1241-4c7a-8cdb-c3c13c54aced" actual="#[vars.account]" expected='#[%dw 2.0&#10;import sfAccount from targetModel::sfResponse&#10;output application/java&#10;---&#10;sfAccount("monica@monica.com", "1321313")]'/>
+			<munit-tools:assert-equals doc:name="PUT SF Account" doc:id="c88523a0-188d-4fcd-bf5d-d20b804b498d" actual="#[payload]" expected='#[%dw 2.0&#10;import sfAccount from targetModel::sfResponse&#10;output application/java&#10;---&#10;sfAccount("monica2@monica.com", "222222")]' />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="dyn-sf-get-request-fail-test" doc:id="bda8663a-85ed-4354-8335-ca4558f9732f" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Send Email" doc:id="1b6b53cc-c8e7-460c-99e2-72aac0b30beb" processor="email:send" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="1bb5edcf-3bf5-4677-bce1-8093f2367f4d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[%dw 2.0&#10;output application/java&#10;---&#10;&quot;&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;  &lt;title&gt; Process Api Notification - Error Occured While Fetching Orders&lt;/title&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;  &lt;h1&gt;Application Error&lt;/h1&gt;&#10;  &lt;p&gt;Dear customer,&lt;p&gt;&#10;  &lt;p&gt;An error has occurred while setting a new watermark. Please see the details below:&lt;/p&gt;&#10;  &lt;ul&gt;&#10;	&lt;li&gt;&lt;strong&gt;Error Message:&lt;/strong&gt; HTTP GET on resource 'https://localhost:8082/api/account' failed: Connection refused: no further information.&lt;/li&gt;&#10;    &lt;li&gt;&lt;strong&gt;Error Code:&lt;/strong&gt; &lt;/li&gt;&#10;    &lt;li&gt;&lt;strong&gt;Error Type:&lt;/strong&gt; HTTP:CONNECTIVITY&lt;/li&gt;&#10;    &lt;li&gt;&lt;strong&gt;Time of Error:&lt;/strong&gt; 27-09-2024 15:37:17&lt;/li&gt;&#10;  &lt;/ul&gt;&#10;  &lt;p&gt;We apologize for the inconvenience. Our team has been notified and is working on a solution.&lt;/p&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;&quot;]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Request from DYN" doc:id="e145557d-b46e-4e3c-a1b7-1bc4d7cba266" >
+				<munit:payload value='#[%dw 2.0&#10;import requestAccount from cmd::sfRequest&#10;output application/json&#10;---&#10;requestAccount("monica@monica.com", "1321313", "")]' />
+			</munit:set-event>
+			<try doc:name="Try" doc:id="79257f77-c379-4971-a1b5-6296d52c6020" >
+				<flow-ref doc:name="dyn-sf-account-flow" doc:id="78e591b0-b650-4421-a7ce-9ab44b35c5f3" name="dyn-sf-account-flow" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="3ed53d37-10d4-45f0-937c-82fa126b90c9" type="HTTP:CONNECTIVITY" >
+						<logger level="INFO" doc:name="Logger" doc:id="e0c61214-9488-4fb0-a0db-c45c6e396ef8" message="#[payload]" />
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals HTTP CONNECTIVITY Error" doc:id="83ba902c-5712-4bf7-b230-70bd4769d61f" actual="#[payload]" expected='#[%dw 2.0&#10;output application/java&#10;---&#10;{&#10;  "code": 500,&#10;  "type": "Internal Server Error",&#10;  "message": "Server side exception occured.",&#10;  "details": "",&#10;  "correlationId": payload.correlationId&#10;}]' />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="sf-dyn-post-test" doc:id="32785e97-6599-4d84-8c2b-e9430f8054f4">
+		<munit:enable-flow-sources>
+			<munit:enable-flow-source value="post-account-sf-dyn-flow" />
+		</munit:enable-flow-sources>
+		<munit:behavior>
+			<munit-tools:mock-when doc:name="GET Account DYN Request" doc:id="b52dd09d-2fb7-4c68-9c07-b59970d93f9e" processor="http:request">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="e895e0d4-1af9-41f0-aa54-967dbee2371a" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value="#[%dw 2.0&#10;output application/java&#10;---&#10;null]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="POST Account DYN Request" doc:id="2bc1bae3-1cbd-4613-8fd6-5cd2fd7c951e" processor="http:request">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="fb336c15-c697-47e8-a663-641f2735afdb" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value='#[%dw 2.0&#10;import dynAccount from targetModel::dynResponse&#10;output application/json&#10;---&#10;dynAccount("monica@monica.com", "1321313")]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="PUT Account SF Request" doc:id="ed358ac7-e33d-47b5-a23c-e09e47b6d1df" processor="http:request">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="0c6aef32-9bd7-4b25-8999-7160fa93130d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value='#[%dw 2.0&#10;import sfAccount from targetModel::sfResponse&#10;output application/json&#10;---&#10;sfAccount("monica@monica.com", "1321313")]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock CSV file" doc:id="536cbe42-8a0d-434e-b3ca-5d5ada38b540" processor="file:write">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="7bf76263-1a1d-43cb-acd6-149aa7a2e855" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value="#[%dw 2.0&#10;output application/csv header=false&#10;---&#10;{&#10;	accountName: &quot;Monica d.o.o.&quot;,&#10;	sfId: &quot;001Qy00000UIRIsIAP&quot;,&#10;	dynId: &quot;fefde7b6-d774-ef11-a670-002248a3d295&quot;,&#10;	timeUpdated: now() as DateTime {format: 'yyyy-MM-dd HH:mm:ss'}&#10;}]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<munit:set-event doc:name="Set Request from SF" doc:id="eed08234-dd21-4317-9ef3-5c8e30b9d904">
+				<munit:payload value='#[%dw 2.0&#10;import requestAccount from cmd::dynRequest&#10;output application/json&#10;---&#10;requestAccount("monica@monica.com", "1321313", "")]' />
+			</munit:set-event>
+			<flow-ref doc:name="sf-dyn-account-flow" doc:id="7a5e4fa2-e57a-4522-94cf-b78b46c98e69" name="sf-dyn-account-flow" />
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="Verify GET Request DYN" doc:id="633c248a-2047-469b-96e7-17596c607737" times="#[1]" processor="http:request">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="e895e0d4-1af9-41f0-aa54-967dbee2371a" attributeName="doc:id" />
+					<munit-tools:with-attribute whereValue="e895e0d4-1af9-41f0-aa54-967dbee2371a" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify POST Request DYN" doc:id="1a3edc63-aedd-4426-a470-241275d2b8fe" times="#[1]" processor="http:request">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="fb336c15-c697-47e8-a663-641f2735afdb" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify PUT Request SF" doc:id="6534023f-ddd5-4db1-8208-95c12436654c" processor="http:request" times="#[1]">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="0c6aef32-9bd7-4b25-8999-7160fa93130d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:assert-equals doc:name="GET Account DYN Request" doc:id="6a844985-1059-493a-996c-516d7a2d0a70" actual="#[vars.account]" expected="#[null]" />
+			<munit-tools:assert-equals doc:name="POST Account DYN Request" doc:id="811c9fbc-3262-4637-bad0-2f5bc1db799f" actual="#[vars.createAccount]" expected='#[%dw 2.0&#10;import dynAccountMapping from cmd::dynRequest&#10;output application/java&#10;---&#10;dynAccountMapping("monica@monica.com", "1321313")]' />
+			<munit-tools:assert-equals doc:name="PUT SF Account" doc:id="69e4bf0b-32fc-44d5-82e6-d51daeb4304a" actual="#[payload]" expected='#[%dw 2.0&#10;import sfAccount from targetModel::sfResponse&#10;output application/java&#10;---&#10;sfAccount("monica@monica.com", "1321313")]' />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="sf-dyn-put-test" doc:id="ca2df88a-15b8-4422-b657-cf685d9872f0">
+		<munit:enable-flow-sources>
+			<munit:enable-flow-source value="put-account-sf-dyn-flow" />
+		</munit:enable-flow-sources>
+		<munit:behavior>
+			<munit-tools:mock-when doc:name="GET Account DYN Request" doc:id="70b0c74b-120e-4233-b29a-b5cd4c187e1b" processor="http:request">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="e895e0d4-1af9-41f0-aa54-967dbee2371a" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value='#[%dw 2.0&#10;import dynAccount from targetModel::dynResponse&#10;output application/json&#10;---&#10;dynAccount("monica@monica.com", "1321313")]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="PUT Account DYN Request" doc:id="31ee5c16-f4c4-4218-a182-a34c1e9a1c6c" processor="http:request">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="08babbac-b597-471d-aa18-448b76a0f3d0" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value='#[%dw 2.0&#10;import dynAccount from targetModel::dynResponse&#10;output application/json&#10;---&#10;dynAccount("monica2@monica.com", "222222")]' />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock CSV file" doc:id="3ad76bc2-9bdf-4d0a-83b5-cf3ce4c4759f" processor="file:write">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="7bf76263-1a1d-43cb-acd6-149aa7a2e855" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value="#[%dw 2.0&#10;output application/csv header=false&#10;---&#10;{&#10;	accountName: &quot;Monica d.o.o.&quot;,&#10;	sfId: &quot;001Qy00000UIRIsIAP&quot;,&#10;	dynId: &quot;fefde7b6-d774-ef11-a670-002248a3d295&quot;,&#10;	timeUpdated: now() as DateTime {format: 'yyyy-MM-dd HH:mm:ss'}&#10;}]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<munit:set-event doc:name="Set Request from SF" doc:id="1ed96fb6-b3cf-4a72-b35d-bad31dff6c6e">
+				<munit:payload value='#[%dw 2.0&#10;import requestAccount from cmd::dynRequest&#10;output application/json&#10;---&#10;requestAccount("monica2@monica.com", "222222", "fefde7b6-d774-ef11-a670-002248a3d295")]' />
+			</munit:set-event>
+			<flow-ref doc:name="sf-dyn-account-flow" doc:id="e53cd21e-3fc0-4f30-bb09-e77d49c1a13e" name="sf-dyn-account-flow" />
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="Verify GET Account DYN Request" doc:id="d0bfc324-662b-4996-aecf-33912a47020c" processor="http:request" times="#[1]">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="e895e0d4-1af9-41f0-aa54-967dbee2371a" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify PUT Account Request" doc:id="fb804ff0-14bd-4447-9899-9841573b0a97" processor="http:request">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="08babbac-b597-471d-aa18-448b76a0f3d0" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:assert-equals doc:name="GET Account DYN Request" doc:id="ae6a926b-469d-4e7e-b956-1d6e911489f6" actual="#[vars.account]" expected='#[%dw 2.0&#10;import dynAccount from targetModel::dynResponse&#10;output application/java&#10;---&#10;dynAccount("monica@monica.com", "1321313")]' />
+			<munit-tools:assert-equals doc:name="PUT DYN Account" doc:id="40aadc5f-fc46-43e2-ae72-e9c4227690a3" actual="#[payload]" expected='#[%dw 2.0&#10;import dynAccount from targetModel::dynResponse&#10;output application/java&#10;---&#10;dynAccount("monica2@monica.com", "222222")]' />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="sf-dyn-get-request-fail-test" doc:id="afb55884-b854-4e7a-aa3e-d2133f730586">
+		<munit:behavior>
+			<munit-tools:mock-when doc:name="Send Email" doc:id="958f693e-915c-43fb-8b0c-a77dd62e6a7f" processor="email:send">
+				<munit-tools:with-attributes>
+					<munit-tools:with-attribute whereValue="1bb5edcf-3bf5-4677-bce1-8093f2367f4d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return>
+					<munit-tools:payload value="#[%dw 2.0&#10;output application/java&#10;---&#10;&quot;&lt;!DOCTYPE html&gt;&#10;&lt;html&gt;&#10;&lt;head&gt;&#10;  &lt;title&gt; Process Api Notification - Error Occured While Fetching Orders&lt;/title&gt;&#10;&lt;/head&gt;&#10;&lt;body&gt;&#10;  &lt;h1&gt;Application Error&lt;/h1&gt;&#10;  &lt;p&gt;Dear customer,&lt;p&gt;&#10;  &lt;p&gt;An error has occurred while setting a new watermark. Please see the details below:&lt;/p&gt;&#10;  &lt;ul&gt;&#10;	&lt;li&gt;&lt;strong&gt;Error Message:&lt;/strong&gt; HTTP GET on resource 'https://localhost:8082/api/account' failed: Connection refused: no further information.&lt;/li&gt;&#10;    &lt;li&gt;&lt;strong&gt;Error Code:&lt;/strong&gt; &lt;/li&gt;&#10;    &lt;li&gt;&lt;strong&gt;Error Type:&lt;/strong&gt; HTTP:CONNECTIVITY&lt;/li&gt;&#10;    &lt;li&gt;&lt;strong&gt;Time of Error:&lt;/strong&gt; 27-09-2024 15:37:17&lt;/li&gt;&#10;  &lt;/ul&gt;&#10;  &lt;p&gt;We apologize for the inconvenience. Our team has been notified and is working on a solution.&lt;/p&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;&quot;]" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<munit:set-event doc:name="Set Request from SF" doc:id="2570663f-5ac4-4f01-a994-748a173768b8">
+				<munit:payload value='#[%dw 2.0&#10;import requestAccount from cmd::dynRequest&#10;output application/json&#10;---&#10;requestAccount("monica@monica.com", "1321313", "")]' />
+			</munit:set-event>
+			<try doc:name="Try" doc:id="93942e92-7da9-4e6e-8295-156d17eda243">
+				<flow-ref doc:name="sf-dyn-account-flow" doc:id="8695fad5-4118-4551-9266-cf364d96c28f" name="sf-dyn-account-flow" />
+				<error-handler>
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="a323794c-c2df-4a52-9e2c-a4c58ffe14d0" type="HTTP:CONNECTIVITY">
+						<logger level="INFO" doc:name="Logger" doc:id="b4cee551-2e2c-4a53-a465-c9634a250bc9" message="#[payload]" />
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:assert-equals doc:name="Assert equals HTTP CONNECTIVITY Error" doc:id="3e63f14c-6126-47db-b040-6c4bc2f0543b" actual="#[payload]" expected='#[%dw 2.0&#10;output application/java&#10;---&#10;{&#10;  "code": 500,&#10;  "type": "Internal Server Error",&#10;  "message": "Server side exception occured.",&#10;  "details": "",&#10;  "correlationId": payload.correlationId&#10;}]' />
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

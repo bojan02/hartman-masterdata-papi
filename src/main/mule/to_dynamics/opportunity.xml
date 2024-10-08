@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="sf-dyn-opportunity-flow" doc:id="2dd6ffdf-59a8-4427-a6b4-6e57340f8814" >
+		<ee:transform doc:name="Opportunity mapping" doc:id="27a4bc60-91dc-47b5-b8d9-38a269a6e4a8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"name": payload.accountName,
+	"topic": payload.accountName ++ " " ++ (now() as Date{"format": "yyyy-MM-dd"}),
+	"potentialCustomer": payload.sfId,
+	"status":
+	if(payload.probability == 0)
+	(
+		2
+	)else if(payload.probability == 100)(
+		1
+	)
+	else(
+		0
+	)
+	,
+	"estRevenue": payload.amount as Number,
+	"actualCloseDate": payload.closeDate
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="POST Opportunity DYN Request vars" doc:id="d4950fc4-1fc9-4835-ab93-524aa8a7ee16">
+			<ee:message />
+			<ee:variables>
+				<ee:set-variable variableName="path"><![CDATA["/opportunity"]]></ee:set-variable>
+				<ee:set-variable variableName="body"><![CDATA[payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="post-request-dyn-connector-subflow" doc:id="c71826e7-976e-49f3-94d7-e5b2cd75b3f5" name="post-request-dyn-connector-subflow" />
+	</flow>
+</mule>

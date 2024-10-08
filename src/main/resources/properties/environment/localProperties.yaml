@@ -1,0 +1,23 @@
+api:
+  id: '0000'
+
+environment:
+  logging:
+    level: 'DEBUG'
+
+https:
+  port: '8083'  
+  
+httpsreqsf:
+  path: '/api'
+  host: 'localhost'
+  port: '8081'  
+
+httpsreqdyn:
+  path: '/api'
+  host: 'localhost'
+  port: '8082'
+  
+keystore:
+  path: 'sapidatabase.jks'
+  alias: 'mule'

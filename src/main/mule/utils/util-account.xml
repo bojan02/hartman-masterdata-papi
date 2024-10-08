@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	<flow name="post-account-sf-dyn-flow" doc:id="0a88e856-be29-40b1-b3f5-4849c634da75" >
+		<ee:transform doc:name="Account mapping DYN Create" doc:id="59073018-4803-4313-a606-22c55e13e2b9" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable variableName="createAccount" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "name": payload.accountName default "",
+  "emailaddress1": payload.email default "",
+  "telephone1": payload.phone default "",
+  "accountnumber": payload.sfId
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="POST Account DYN Request vars" doc:id="a17be7c8-5656-49aa-9227-5e25a030966f" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable variableName="path" ><![CDATA["/account"]]></ee:set-variable>
+				<ee:set-variable variableName="body" ><![CDATA[vars.createAccount]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="post-request-dyn-connector-subflow" doc:id="4cbe0e35-57b6-43ec-a092-79643c7e6357" name="post-request-dyn-connector-subflow" target="dynAccount" />
+		<ee:transform doc:name="Account mapping SF Update" doc:id="e20e3ad1-1753-4a78-973c-5cc05f59a225" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Id": payload.sfId,
+	"Name": payload.accountName as String default "",
+	"Email__c": payload.email as String default "",
+	"Phone": payload.phone as String default "",
+	"CustomerPriority__c": payload.customerPriority as String default "Medium",
+	"SLAExpirationDate__c": payload.slaExpirationDate as Date default (now() + |P90D|) as Date{"format": "yyyy-MM-dd"},
+	"Active__c": payload.active as String default "Yes",
+	"ExternalId__c": vars.dynAccount.dynId as String
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="POST Account SF Request vars" doc:id="720ce418-b824-4239-8e1c-c390b3960578" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable variableName="path" ><![CDATA["/account"]]></ee:set-variable>
+				<ee:set-variable variableName="body" ><![CDATA[payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="post-request-sf-connector-subflow" doc:id="cb64834a-1291-412a-823a-fc46e8cfe36d" name="post-request-sf-connector-subflow" />
+		<flow-ref doc:name="write-log-to-csv-subflow" doc:id="78b5bf75-76d6-49b4-8974-f8b47c1be60b" name="write-log-to-csv-subflow" target="logCsv"/>
+	</flow>
+	<flow name="put-account-sf-dyn-flow" doc:id="4df1bbe1-1c6b-4f2e-a005-5dbf115f023d" >
+		<ee:transform doc:name="Account mapping DYN Update" doc:id="391f8a3c-6978-4c2e-929e-f8ff7dfad49f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"name": payload.accountName,
+	"emailaddress1": payload.email,
+	"telephone1": payload.phone,
+	"accountnumber": payload.sfId
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="PUT Account DYN Request vars" doc:id="7cc56a0f-32ed-43a9-9194-34cf4c02c978" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable variableName="path" ><![CDATA["/account/{ID}"]]></ee:set-variable>
+				<ee:set-variable variableName="body" ><![CDATA[payload]]></ee:set-variable>
+				<ee:set-variable variableName="uriParam" ><![CDATA[output application/java
+---
+{
+	"ID" : vars.account.dynId
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="put-request-dyn-connector-subflow" doc:id="e0897ff6-51d2-4446-be6a-f7d5153b7545" name="put-request-dyn-connector-subflow" />
+		<flow-ref doc:name="write-log-to-csv-subflow" doc:id="94739695-fc13-4fc4-a207-ff65f9b33752" name="write-log-to-csv-subflow" target="logCsv"/>
+	</flow>
+	<sub-flow name="break-loop-account-flow" doc:id="2c9d3bca-8f82-439e-ab74-a6f329ce8d57">
+		<ee:transform doc:name="Account mapping" doc:id="8b87a8d9-9deb-4a53-a284-8cb8c6fcb4b8">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+vars.account]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+	</sub-flow>
+	<flow name="post-account-dyn-sf-flow" doc:id="098506a3-1cff-4b11-8531-47cd4657fb3f" >
+		<ee:transform doc:name="Account mapping SF Create" doc:id="2bac89e5-705a-4d14-aec0-38e4522f3c94" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable variableName="createAccount" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "Name": payload.accountName,
+  "Email__c": payload.email,
+  "Phone": payload.phone,
+  "CustomerPriority__c": "Medium",
+  "SLAExpirationDate__c": (now() + |P90D|) as Date{"format": "yyyy-MM-dd"},
+  "Active__c": "Yes",
+  "ExternalId__c": payload.dynId
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="POST Account SF Request vars" doc:id="b23aa81a-7bd3-47a4-8b39-948edcba7314" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable variableName="path" ><![CDATA["/account"]]></ee:set-variable>
+				<ee:set-variable variableName="body" ><![CDATA[vars.createAccount]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="post-request-sf-connector-subflow" doc:id="1fab8acb-54c4-4317-ad77-28a71298e860" name="post-request-sf-connector-subflow" target="sfAccount" />
+		<ee:transform doc:name="Account mapping DYN Update" doc:id="fda24ef4-d106-42cc-9621-b4be12cc07bd" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"name": payload.accountName,
+	"emailaddress1": payload.email,
+	"telephone1": payload.phone,
+	"accountnumber": vars.sfAccount.sfId
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="PUT Account DYN Request vars" doc:id="caf88daf-a0ba-47b7-8c66-70e3cf043e91" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable variableName="path" ><![CDATA["/account/{ID}"]]></ee:set-variable>
+				<ee:set-variable variableName="body" ><![CDATA[payload]]></ee:set-variable>
+				<ee:set-variable variableName="uriParam" ><![CDATA[output application/java
+---
+{
+	"ID" : vars.createAccount.ExternalId__c
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="put-request-dyn-connector-subflow" doc:id="074ff967-3de6-4e4f-9dfe-168ed67b7a55" name="put-request-dyn-connector-subflow" />
+		<flow-ref doc:name="write-log-to-csv-subflow" doc:id="76318d94-a033-42d7-a509-e7dfc33b3600" name="write-log-to-csv-subflow" target="logCsv"/>
+	</flow>
+	<flow name="put-account-dyn-sf-flow" doc:id="371c1376-ea4a-411e-856b-0a492ab12d65">
+		<ee:transform doc:name="Account mapping SF Update" doc:id="cad08e41-a36b-4d87-a1f8-2a761429c407">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Id": payload.sfId,
+    "Name": payload.accountName as String,
+    "Email__c": payload.email as String,
+    "Phone": payload.phone as String,
+    "CustomerPriority__c": vars.account.customerPriority as String,
+    "SLAExpirationDate__c": vars.account.slaExpirationDate,
+    "Active__c": vars.account.active as String,
+    "ExternalId__c": payload.dynId as String
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="POST Account SF Request vars" doc:id="b2729850-c5ce-4e63-a494-ef1910b61376">
+			<ee:message />
+			<ee:variables>
+				<ee:set-variable variableName="path"><![CDATA["/account"]]></ee:set-variable>
+				<ee:set-variable variableName="body"><![CDATA[payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="post-request-sf-connector-subflow" doc:id="6af1f8c5-2fa5-4834-9b52-ea216d65e0d6" name="post-request-sf-connector-subflow" />
+		<flow-ref doc:name="write-log-to-csv-subflow" doc:id="b74609c7-f14c-408a-8955-4cc295313099" name="write-log-to-csv-subflow" target="logCsv"/>
+	</flow>
+	<sub-flow name="write-log-to-csv-subflow" doc:id="366ba3b8-d01e-4961-afa0-c8f265837f36">
+		<ee:transform doc:name="Map to CSV" doc:id="34033175-99fd-460c-a89b-c2d100aa51af">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/csv header=false
+---
+{
+	accountName: payload.accountName,
+	sfId: payload.sfId,
+	dynId: payload.dynId,
+	timeUpdated: now() as DateTime {format: 'yyyy-MM-dd HH:mm:ss'}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<file:write doc:name="Write to CSV" doc:id="7bf76263-1a1d-43cb-acd6-149aa7a2e855" mode="APPEND" path="C:\Users\bojan\Desktop\backup-log.csv" />
+	</sub-flow>
+</mule>

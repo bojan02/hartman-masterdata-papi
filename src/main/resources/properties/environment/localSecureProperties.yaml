@@ -1,0 +1,15 @@
+certificate:
+  keypassword: '![Ymlc260Y7q/sDOeYQzXwqw==]'
+  password: '![Ymlc260Y7q/sDOeYQzXwqw==]'
+  
+clientIdenforcement:
+  clientId: '![Bzzi9vaz1vtNCyGAjTvVSY26x/O/57Eip1MtaUo+oxvjMRINSwVYFm1dTFVpgTIx]'
+  clientSecret: '![LlWPWnjTgxVeEiN2rGbiQiIwPB6d2OLbfVFdXee3TRNnhG8ma2iIh2OxSldeolDL]'
+  
+emailConfig:
+  sender: '![nzjVPRJXdRprvH9JHs8yYlXFDEeCknFqm9lub45PX6c=]'
+  password: '![BFySlkySA2XQqyXyqad2TdbyU6cQ/XosynUC4wuQ7ww=]'
+  receiver: '![RKzaRifrxvMnVfwjqTVd1XvyxelLRUvgFB/tijqe0yg=]'
+  
+apiDiscovery:
+  apiId: '![7rYhkYhAvkIWB7gpnFONhA==]'

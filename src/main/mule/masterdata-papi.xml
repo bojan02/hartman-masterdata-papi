@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
+    <flow name="masterdata-papi-main">
+        <http:listener config-ref="masterdata-papi-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="masterdata-papi-config" />
+    </flow>
+    <flow name="masterdata-papi-console">
+        <http:listener config-ref="masterdata-papi-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="masterdata-papi-config" />
+    </flow>
+    <flow name="delete:\dynaccountdelete:masterdata-papi-config">
+		<flow-ref doc:name="dyn-sf-delete-account-flow" doc:id="97f85c47-b7e1-428d-bfa3-68a81a50bf82" name="dyn-sf-delete-account-flow" />
+    </flow>
+    <flow name="delete:\dyncontactdelete:masterdata-papi-config">
+		<flow-ref doc:name="dyn-sf-delete-contact-flow" doc:id="38c7230c-93f7-4747-b18b-9f00a1566c29" name="dyn-sf-delete-contact-flow" />
+    </flow>
+    <flow name="delete:\sfaccountdelete:masterdata-papi-config">
+		<flow-ref doc:name="sf-dyn-delete-account-flow" doc:id="42573069-da06-413a-bb32-5dce478cbedd" name="sf-dyn-delete-account-flow" />
+    </flow>
+    <flow name="delete:\sfcontactdelete:masterdata-papi-config">
+		<flow-ref doc:name="sf-dyn-delete-contact-flow" doc:id="9ebb9e32-ad29-4b59-9f79-125f753f3a4b" name="sf-dyn-delete-contact-flow" />
+    </flow>
+    <flow name="post:\dynaccount:application\json:masterdata-papi-config">
+		<flow-ref doc:name="dyn-sf-account-flow" doc:id="d867aab4-d843-45fb-93f1-e22da5af9714" name="dyn-sf-account-flow" />
+    </flow>
+    <flow name="post:\dyncontact:application\json:masterdata-papi-config">
+		<flow-ref doc:name="dyn-sf-contact-flow" doc:id="4ac8542a-b389-4fdc-8456-a9f87f2484c5" name="dyn-sf-contact-flow" />
+    </flow>
+    <flow name="post:\sfaccount:application\json:masterdata-papi-config">
+		<flow-ref doc:name="sf-dyn-account-flow" doc:id="e7c3e770-5eee-45ef-b3c0-a8eba027664b" name="sf-dyn-account-flow" />
+    </flow>
+    <flow name="post:\sfcontact:application\json:masterdata-papi-config">
+		<flow-ref doc:name="sf-dyn-contact-flow" doc:id="f99058a2-ff9b-467e-8196-3f4060516664" name="sf-dyn-contact-flow" />
+    </flow>
+    <flow name="post:\sfopportunity:application\json:masterdata-papi-config">
+		<flow-ref doc:name="sf-dyn-opportunity-flow" doc:id="1207ad4c-788c-4aee-bdb7-b8010c39b8ef" name="sf-dyn-opportunity-flow" />
+    </flow>
+</mule>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="dyn-sf-contact-flow" doc:id="6c0fc831-7eda-4b31-b9fb-8516332a1c31" >
+		<flow-ref doc:name="dyn-sf-account-flow" doc:id="e828b940-476a-4942-8249-0bdb680cfb91" name="dyn-sf-account-flow" target="account" />
+		<ee:transform doc:name="GET Contact by ID SF Request vars" doc:id="73b04790-01e4-40cf-b0d6-5eebd383d822">
+			<ee:message />
+			<ee:variables>
+				<ee:set-variable variableName="path"><![CDATA["/contact/{ID}"]]></ee:set-variable>
+				<ee:set-variable variableName="body"><![CDATA[payload]]></ee:set-variable>
+				<ee:set-variable variableName="queryParam"><![CDATA[output application/java
+---
+{
+}]]></ee:set-variable>
+				<ee:set-variable variableName="uriParam"><![CDATA[output application/java
+---
+{
+	"ID" : payload.contactSfId
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<try doc:name="Try" doc:id="ace732d2-6640-4803-9181-8a313f530972">
+			<flow-ref doc:name="get-request-sf-connector-subflow" doc:id="0f9f985b-733b-40af-9ecf-3096889a9e8f" name="get-request-sf-connector-subflow" target="contact"/>
+			<error-handler>
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="b5fd287d-d3aa-4717-88da-7c12da72742b">
+					<set-variable value="#[false]" doc:name="Set vars.isContactExists" doc:id="9f004f4e-9ef5-41a2-a30e-69057c8c0ad6" variableName="isContactExists" />
+				</on-error-continue>
+			</error-handler>
+		</try>
+		<ee:transform doc:name="Set vars.condition" doc:id="935e8359-93b1-4a95-8ea8-19c2500c6cdf">
+			<ee:message />
+			<ee:variables>
+				<ee:set-variable variableName="condition"><![CDATA[%dw 2.0
+output application/json
+---
+if(vars.isContactExists == false) "post-contact-dyn-sf-flow"
+else if((payload.firstName == vars.contact.firstName) and 
+(payload.lastName == vars.contact.lastName) and 
+(payload.sfId == vars.contact.accountId)) "break-loop-contact-flow"
+else "put-contact-dyn-sf-flow"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="Route to flow" doc:id="27cdb5ee-beb4-4e31-b724-09ff88e850a6" name="#[vars.condition]" />
+	</flow>
+	<flow name="dyn-sf-delete-contact-flow" doc:id="67addfde-7911-489c-a76c-a41f6705c48b" >
+		<ee:transform doc:name="GET by External ID SalesForce Request vars" doc:id="8ccd4614-d9da-491e-8af0-58e992086498">
+			<ee:message />
+			<ee:variables>
+				<ee:set-variable variableName="path"><![CDATA["/dyncontact/{ID}"]]></ee:set-variable>
+				<ee:set-variable variableName="body"><![CDATA[payload]]></ee:set-variable>
+				<ee:set-variable variableName="queryParam"><![CDATA[output application/java
+---
+{
+}]]></ee:set-variable>
+				<ee:set-variable variableName="uriParam"><![CDATA[output application/java
+---
+{
+	"ID" : payload.contactDynId
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="get-request-sf-connector-subflow" doc:id="92d7309e-05c1-4e37-bbf4-f072c63f536b" name="get-request-sf-connector-subflow" target="contact"/>
+		<choice doc:name="Choice" doc:id="cc1e2c8f-5c25-4fa0-b6e1-5828986cec6c" >
+			<when expression="#[isEmpty(vars.contact)]" >
+				<logger level="INFO" doc:name="Log Contact not exist on SalesForce" doc:id="a5ea1f5d-0a61-4947-a4fe-8f6a55b2f392" message='#["Contact does not exist on SalesForce"]' />
+			</when>
+			<otherwise >
+				<ee:transform doc:name="DELETE Contact SF Request vars" doc:id="3f5f9aa5-745e-42ba-aec0-2f9c83b16e65">
+					<ee:message />
+					<ee:variables>
+						<ee:set-variable variableName="path"><![CDATA["/contact/{ID}"]]></ee:set-variable>
+						<ee:set-variable variableName="body"><![CDATA[payload]]></ee:set-variable>
+						<ee:set-variable variableName="uriParam"><![CDATA[output application/java
+---
+{
+	"ID" : vars.contact.id
+}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<flow-ref doc:name="delete-request-sf-connector-subflow" doc:id="8fe73384-11fb-4547-bcfa-1e4f3f81c5cf" name="delete-request-sf-connector-subflow" target="contact" />
+			</otherwise>
+		</choice>
+	</flow>
+</mule>

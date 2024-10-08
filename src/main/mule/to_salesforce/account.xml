@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+
+	<flow name="dyn-sf-account-flow" doc:id="588c6a8a-1fb2-4442-bf04-f03ba4b2ee65" >
+		<ee:transform doc:name="GET by AccountName SF Request vars" doc:id="94000265-db9c-4c9d-937b-3551ba0482bc">
+			<ee:message />
+			<ee:variables>
+				<ee:set-variable variableName="path"><![CDATA["/account"]]></ee:set-variable>
+				<ee:set-variable variableName="body"><![CDATA[payload]]></ee:set-variable>
+				<ee:set-variable variableName="queryParam"><![CDATA[output application/java
+---
+{
+	"accountName" : payload.accountName
+}]]></ee:set-variable>
+				<ee:set-variable variableName="uriParam"><![CDATA[output application/java
+---
+{
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="get-request-sf-connector-subflow" doc:id="70b77cec-8143-4485-847a-0a4ffeb57118" name="get-request-sf-connector-subflow" target="account" />
+		<ee:transform doc:name="Set vars.condition" doc:id="c889e923-e7a1-45c3-8a21-fd7386353301">
+			<ee:message />
+			<ee:variables>
+				<ee:set-variable variableName="condition"><![CDATA[%dw 2.0
+output application/json
+---
+if(isEmpty(vars.account)) "post-account-dyn-sf-flow"
+else if((payload.accountName == vars.account.accountName) and 
+(payload.email == vars.account.email) and 
+(payload.phone == vars.account.phone)) "break-loop-account-flow"
+else "put-account-dyn-sf-flow"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="Route to flow" doc:id="643ad52a-10c8-46db-9f0a-72627a007acc" name="#[vars.condition]" />
+	</flow>
+	<flow name="dyn-sf-delete-account-flow" doc:id="587e7d97-b272-4536-a8e4-61cedf56705d" >
+		<ee:transform doc:name="GET by External ID SF Request vars" doc:id="fcfed269-f0bf-4c7d-b836-9ba1af57c1f0">
+			<ee:message />
+			<ee:variables>
+				<ee:set-variable variableName="path"><![CDATA["/dynaccount/{ID}"]]></ee:set-variable>
+				<ee:set-variable variableName="body"><![CDATA[payload]]></ee:set-variable>
+				<ee:set-variable variableName="queryParam"><![CDATA[output application/java
+---
+{
+}]]></ee:set-variable>
+				<ee:set-variable variableName="uriParam"><![CDATA[output application/java
+---
+{
+	"ID" : payload.dynId
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="get-request-sf-connector-subflow" doc:id="ab7d2733-f1ed-40c8-b09b-0dd7eebf18ff" name="get-request-sf-connector-subflow" target="account"/>
+		<choice doc:name="Choice" doc:id="97d5767e-bd7d-4010-b504-b2cf35cd5104" >
+			<when expression='#[isEmpty(vars.account)]' >
+				<logger level="INFO" doc:name="Log Account not exist on SalesForce" doc:id="5fec0981-2a6e-4f62-9eae-c354cc9284b3" message='#["Account does not exist on SalesForce"]' />
+			</when>
+			<otherwise >
+				<ee:transform doc:name="DELETE Account SF Request vars" doc:id="c6f45dd7-1d42-47c5-9f18-56bb526699f3">
+					<ee:message />
+					<ee:variables>
+						<ee:set-variable variableName="path"><![CDATA["/account/{ID}"]]></ee:set-variable>
+						<ee:set-variable variableName="body"><![CDATA[payload]]></ee:set-variable>
+						<ee:set-variable variableName="uriParam"><![CDATA[output application/java
+---
+{
+	"ID" : vars.account.sfId
+}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<flow-ref doc:name="delete-request-sf-connector-subflow" doc:id="08bdd787-6345-45c3-a823-7aa6f2e47fd6" name="delete-request-sf-connector-subflow" />
+			</otherwise>
+		</choice>
+	</flow>
+</mule>

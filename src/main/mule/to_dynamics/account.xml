@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+	<flow name="sf-dyn-account-flow" doc:id="d84fecde-3435-421c-b516-2662a56d821e" >
+		<ee:transform doc:name="GET by AccountName DYN Request vars" doc:id="5b4820ae-60b2-42ad-b7ab-0cde14f47eee">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="path"><![CDATA["/account"]]></ee:set-variable>
+				<ee:set-variable variableName="body"><![CDATA[payload]]></ee:set-variable>
+				<ee:set-variable variableName="queryParam"><![CDATA[output application/java
+---
+{
+	"accountName" : payload.accountName
+}]]></ee:set-variable>
+				<ee:set-variable variableName="uriParam"><![CDATA[output application/java
+---
+{
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="get-request-dyn-connector-subflow" doc:id="3322a053-f2bf-4e5f-b2ea-5cad91f70546" name="get-request-dyn-connector-subflow" target="account" />
+		<ee:transform doc:name="Set vars.condition" doc:id="def176d6-8f6d-49aa-8f05-18f5adad715a">
+					<ee:message>
+					</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="condition"><![CDATA[%dw 2.0
+output application/json
+---
+if(isEmpty(vars.account)) "post-account-sf-dyn-flow"
+else if((payload.accountName == vars.account.accountName) and 
+(payload.email == vars.account.email) and 
+(payload.phone == vars.account.phone)) "break-loop-account-flow"
+else "put-account-sf-dyn-flow"]]></ee:set-variable>
+			</ee:variables>
+				</ee:transform>
+		<flow-ref doc:name="Route to flow" doc:id="9160de84-92bd-4ac2-9b45-cc02b4a27c26" name="#[vars.condition]" />
+	</flow>
+	<flow name="sf-dyn-delete-account-flow" doc:id="09f1f6ed-2918-4594-9656-56a436eea79d" >
+		<ee:transform doc:name="GET by ID DYN Request vars" doc:id="79a5d261-9cf6-4b0c-b8ab-4873aff4c76c">
+			<ee:message />
+			<ee:variables>
+				<ee:set-variable variableName="path"><![CDATA["/account/{ID}"]]></ee:set-variable>
+				<ee:set-variable variableName="body"><![CDATA[payload]]></ee:set-variable>
+				<ee:set-variable variableName="queryParam"><![CDATA[output application/java
+---
+{
+}]]></ee:set-variable>
+				<ee:set-variable variableName="uriParam"><![CDATA[output application/java
+---
+{
+	"ID" : payload.dynId
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="get-request-dyn-connector-subflow" doc:id="19a6d3ad-dd1d-4a13-a5e1-fbf2a83caf90" name="get-request-dyn-connector-subflow" target="account" />
+		<choice doc:name="Choice" doc:id="02fd8d5c-5d16-4278-bee8-39573346e8af" >
+			<when expression="#[isEmpty(vars.account)]" >
+				<logger level="INFO" doc:name="Log Account not exist on Dynamics" doc:id="0c60d68d-ac06-4f42-89a3-506b4df5b474" message='#["Account does not exist on Dynamics"]' />
+			</when>
+			<otherwise >
+				<ee:transform doc:name="DELETE by ID DYN Request vars" doc:id="716dcf33-3b1a-433e-a277-8a7dff09b1f4">
+					<ee:message />
+					<ee:variables>
+						<ee:set-variable variableName="path"><![CDATA["/account/{ID}"]]></ee:set-variable>
+						<ee:set-variable variableName="body"><![CDATA[payload]]></ee:set-variable>
+						<ee:set-variable variableName="uriParam"><![CDATA[output application/java
+---
+{
+	"ID" : payload.dynId
+}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<flow-ref doc:name="delete-request-dyn-connector-subflow" doc:id="d705e564-adfa-455d-87d8-819740f2e93e" name="delete-request-dyn-connector-subflow" />
+			</otherwise>
+		</choice>
+	</flow>
+</mule>

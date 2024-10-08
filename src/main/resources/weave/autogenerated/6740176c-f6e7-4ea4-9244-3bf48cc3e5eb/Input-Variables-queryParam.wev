@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_6740176c_f6e7_4ea4_9244_3bf48cc3e5eb_Input_Variables_queryParam = {|  |}
+

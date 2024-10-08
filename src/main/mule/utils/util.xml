@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+	<sub-flow name="send-error-mail-subflow" doc:id="31068971-47a1-49a7-982e-03f7fd5c5728" >
+		<ee:transform doc:name="Set vars" doc:id="61430369-f833-4fa6-aa01-62e479916866">
+					<ee:message />
+					<ee:variables>
+						<ee:set-variable variableName="title"><![CDATA["Process Api Notification - Error Occured While Fetching Orders"]]></ee:set-variable>
+						<ee:set-variable variableName="currentTime"><![CDATA[%dw 2.0
+output application/json
+---
+now() as DateTime{format: 'dd-MM-yyyy HH:mm:ss'}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+		<ee:transform doc:name="Set Email message" doc:id="21f038b3-e72f-4feb-8333-dd37758af119">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+"<!DOCTYPE html>
+<html>
+<head>
+  <title> " ++ vars.title ++ "</title>
+</head>
+<body>
+  <h1>Application Error</h1>
+  <p>Dear customer,<p>
+  <p>An error has occurred while setting a new watermark. Please see the details below:</p>
+  <ul>
+	<li><strong>Error Message:</strong> " ++ error.description as String ++  "</li>
+    <li><strong>Error Code:</strong> " ++ if(vars.httpStatus != null) vars.httpStatus else "" ++ "</li>
+    <li><strong>Error Type:</strong> " ++ error.errorType.asString ++ "</li>
+    <li><strong>Time of Error:</strong> " ++ vars.currentTime ++ "</li>
+  </ul>
+  <p>We apologize for the inconvenience. Our team has been notified and is working on a solution.</p>
+</body>
+</html>"]]></ee:set-payload>
+					</ee:message>
+					<ee:variables />
+				</ee:transform>
+		<email:send doc:name="Send Email" doc:id="1bb5edcf-3bf5-4677-bce1-8093f2367f4d" config-ref="Email_SMTP" fromAddress="#[p('secure::emailConfig.sender')]" subject="#[vars.title]">
+					<email:to-addresses>
+						<email:to-address value="#[p('secure::emailConfig.receiver')]" />
+					</email:to-addresses>
+					<email:body contentType="text/html" encoding="UTF-8" />
+				</email:send>
+	</sub-flow>
+	<sub-flow name="get-request-sf-connector-subflow" doc:id="bf2b1ff2-26c8-45ea-ac1b-8e288b0d12a6" >
+		<try doc:name="Try" doc:id="ae99bee8-9d7a-4b0f-94f1-84ca1e02522e" >
+			<http:request method="GET" doc:name="SalesForce GET Request" doc:id="7de42411-9059-456b-a984-7e59669d50aa" config-ref="HTTP_Request_configuration_SalesForce" path="#[vars.path]">
+			<http:body><![CDATA[#[vars.body]]]></http:body>
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('secure::clientIdenforcement.clientSecret'),
+	"client_id" : p('secure::clientIdenforcement.clientId')
+}]]]></http:headers>
+			<http:uri-params><![CDATA[#[vars.uriParam]]]></http:uri-params>
+			<http:query-params><![CDATA[#[vars.queryParam]]]></http:query-params>
+		</http:request>
+			<error-handler>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="d766e314-0c56-4d48-b451-e7564431ba49" >
+					<flow-ref doc:name="send-error-mail-subflow" doc:id="322ef99f-1a14-4bb1-8944-2fd83ce5ebc3" name="send-error-mail-subflow" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+	</sub-flow>
+	<sub-flow name="post-request-sf-connector-subflow" doc:id="367ba2cf-bca0-4061-afd1-1287aebe4f96">
+		<try doc:name="Try" doc:id="d265cde0-a1d2-48b8-9b98-f01cecf0b87e" >
+			<http:request method="POST" doc:name="SalesForce POST Request" doc:id="0c6aef32-9bd7-4b25-8999-7160fa93130d" config-ref="HTTP_Request_configuration_SalesForce" path="#[vars.path]">
+			<http:body><![CDATA[#[vars.body]]]></http:body>
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('secure::clientIdenforcement.clientSecret'),
+	"client_id" : p('secure::clientIdenforcement.clientId')
+}]]]></http:headers>
+		</http:request>
+			<error-handler>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="970c2bdf-f8b5-4966-8c31-43ab7d6988e2" >
+					<flow-ref doc:name="send-error-mail-subflow" doc:id="8e3e52e1-cdba-439b-a052-7f0b82335291" name="send-error-mail-subflow" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+	</sub-flow>
+	<sub-flow name="delete-request-sf-connector-subflow" doc:id="18470e5c-ed2b-4403-b55f-39ddf1305f32">
+		<try doc:name="Try" doc:id="ceb99a1d-d60e-4d1f-bb2d-c22a4973841c" >
+			<http:request method="DELETE" doc:name="SalesForce DELETE Request" doc:id="e5951220-0957-4fee-b94f-b147e1720059" config-ref="HTTP_Request_configuration_SalesForce" path="#[vars.path]">
+			<http:body><![CDATA[#[vars.body]]]></http:body>
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('secure::clientIdenforcement.clientSecret'),
+	"client_id" : p('secure::clientIdenforcement.clientId')
+}]]]></http:headers>
+			<http:uri-params><![CDATA[#[vars.uriParam]]]></http:uri-params>
+		</http:request>
+			<error-handler>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="d619663f-360a-4a6f-b970-ec5023484ac1" >
+					<flow-ref doc:name="send-error-mail-subflow" doc:id="e5f9c576-5d49-4f09-8f19-78c810cd7ae4" name="send-error-mail-subflow" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+	</sub-flow>
+	<sub-flow name="get-request-dyn-connector-subflow" doc:id="e827f24d-9249-4c8e-8f0f-29304fa59bec" >
+		<try doc:name="Try" doc:id="3d39b765-2662-4448-9350-54dafba7194c" >
+			<http:request method="GET" doc:name="Dynamics GET Request" doc:id="e895e0d4-1af9-41f0-aa54-967dbee2371a" config-ref="HTTP_Request_configuration_dynamics" path="#[vars.path]">
+			<http:body><![CDATA[#[vars.body]]]></http:body>
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('secure::clientIdenforcement.clientSecret'),
+	"client_id" : p('secure::clientIdenforcement.clientId')
+}]]]></http:headers>
+			<http:uri-params><![CDATA[#[vars.uriParam]]]></http:uri-params>
+			<http:query-params><![CDATA[#[vars.queryParam]]]></http:query-params>
+		</http:request>
+			<error-handler>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="344db521-5955-4c0f-8091-c2176215a317" >
+					<flow-ref doc:name="send-error-mail-subflow" doc:id="1e5199b5-0bf2-457d-933a-005d46261204" name="send-error-mail-subflow" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+	</sub-flow>
+	<sub-flow name="post-request-dyn-connector-subflow" doc:id="6740176c-f6e7-4ea4-9244-3bf48cc3e5eb" >
+		<try doc:name="Try" doc:id="2ecdb6aa-9c91-4a16-b5e1-a6cff23ececf" >
+			<http:request method="POST" doc:name="Dynamics POST Request" doc:id="fb336c15-c697-47e8-a663-641f2735afdb" config-ref="HTTP_Request_configuration_dynamics" path="#[vars.path]">
+			<http:body><![CDATA[#[vars.body]]]></http:body>
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('secure::clientIdenforcement.clientSecret'),
+	"client_id" : p('secure::clientIdenforcement.clientId')
+}]]]></http:headers>
+		</http:request>
+			<error-handler>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="fb4f223f-6c09-49a1-be2c-46a297c0b573" >
+					<flow-ref doc:name="send-error-mail-subflow" doc:id="62931b84-c1df-4423-a69f-653ad1fa47f5" name="send-error-mail-subflow" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+	</sub-flow>
+	<sub-flow name="put-request-dyn-connector-subflow" doc:id="02c0c15d-2325-4c10-b570-54ea48479069">
+		<try doc:name="Try" doc:id="ac6f3eb5-2707-4570-976e-17cd0e0236d3" >
+			<http:request method="PUT" doc:name="Dynamics PUT Request" doc:id="08babbac-b597-471d-aa18-448b76a0f3d0" config-ref="HTTP_Request_configuration_dynamics" path="#[vars.path]">
+			<http:body><![CDATA[#[vars.body]]]></http:body>
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('secure::clientIdenforcement.clientSecret'),
+	"client_id" : p('secure::clientIdenforcement.clientId')
+}]]]></http:headers>
+			<http:uri-params><![CDATA[#[vars.uriParam]]]></http:uri-params>
+		</http:request>
+			<error-handler>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="6ca61e44-3a25-4d14-94c8-8afce6102c0a" >
+					<flow-ref doc:name="send-error-mail-subflow" doc:id="2fd9169e-fa87-47f3-bc5a-4b8304b94c97" name="send-error-mail-subflow" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+	</sub-flow>
+	<sub-flow name="delete-request-dyn-connector-subflow" doc:id="56e0da98-8d62-4a55-851a-4db4a65800d0" >
+		<try doc:name="Try" doc:id="c17060f0-2843-4f4a-8b9a-dc2cec53f31d" >
+			<http:request method="DELETE" doc:name="Dynamics DELETE Request" doc:id="db19c675-bf0d-48ac-a9d2-f999c0624f02" config-ref="HTTP_Request_configuration_dynamics" path="#[vars.path]">
+			<http:body><![CDATA[#[vars.body]]]></http:body>
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('secure::clientIdenforcement.clientSecret'),
+	"client_id" : p('secure::clientIdenforcement.clientId')
+}]]]></http:headers>
+			<http:uri-params><![CDATA[#[vars.uriParam]]]></http:uri-params>
+			<http:query-params><![CDATA[#[vars.queryParam]]]></http:query-params>
+		</http:request>
+			<error-handler>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="8f078437-8f5e-416c-bfb0-aa4f2b36271f" >
+					<flow-ref doc:name="send-error-mail-subflow" doc:id="3489a90d-d330-4bae-94e1-13a1abc6deb2" name="send-error-mail-subflow" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+	</sub-flow>
+</mule>
