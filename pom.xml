@@ -178,13 +178,6 @@
 			<classifier>mule-plugin</classifier>
 		</dependency>
 		<dependency>
-			<groupId>ea182e55-d784-4f74-9336-f94ee0189000</groupId>
-			<artifactId>masterdata-papi</artifactId>
-			<version>1.0.0</version>
-			<classifier>raml</classifier>
-			<type>zip</type>
-		</dependency>
-		<dependency>
 			<groupId>org.mule.connectors</groupId>
 			<artifactId>mule-file-connector</artifactId>
 			<version>1.5.2</version>
@@ -195,6 +188,13 @@
 			<artifactId>mule-email-connector</artifactId>
 			<version>1.7.3</version>
 			<classifier>mule-plugin</classifier>
+		</dependency>
+		<dependency>
+			<groupId>b2364939-ddcb-4a64-a2ca-16799a22819a</groupId>
+			<artifactId>masterdata-papi</artifactId>
+			<version>1.0.0</version>
+			<classifier>raml</classifier>
+			<type>zip</type>
 		</dependency>
 	</dependencies>
 

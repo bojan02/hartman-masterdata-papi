@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:email="http://www.mulesoft.org/schema/mule/email"
-	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:njams="http://www.mulesoft.org/schema/mule/njams" xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
-http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd  http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd  http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/njams http://www.mulesoft.org/schema/mule/njams/current/mule-njams.xsd http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd">
-    <apikit:config name="masterdata-papi-config" api="resource::ea182e55-d784-4f74-9336-f94ee0189000:masterdata-papi:1.0.0:raml:zip:masterdata-papi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
-    	<email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="2c6afb70-fa57-460e-9dc6-65ffdadb992f" >
-		<email:smtp-connection host="smtp.gmail.com" user="${secure::emailConfig.sender}" password="${secure::emailConfig.password}" >
-			<email:properties >
-				<email:property key="mail.smtp.starttls.enable" value="true" />
-			</email:properties>
-		</email:smtp-connection>
-	</email:smtp-config>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:njams="http://www.mulesoft.org/schema/mule/njams" xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=" http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd  http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd  http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/njams http://www.mulesoft.org/schema/mule/njams/current/mule-njams.xsd http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd">
+    <apikit:config name="masterdata-papi-config" api="resource::b2364939-ddcb-4a64-a2ca-16799a22819a:masterdata-papi:1.0.0:raml:zip:masterdata-papi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="2c6afb70-fa57-460e-9dc6-65ffdadb992f">
+        <email:smtp-connection host="smtp.gmail.com" user="${secure::emailConfig.sender}" password="${secure::emailConfig.password}">
+            <email:properties>
+                <email:property key="mail.smtp.starttls.enable" value="true" />
+            </email:properties>
+        </email:smtp-connection>
+    </email:smtp-config>
     <http:request-config name="HTTP_Request_configuration_SalesForce" doc:name="HTTP Request configuration" doc:id="ae93ddac-304f-40d5-b916-514f505a9cb1" basePath="${httpsreqsf.path}" responseTimeout="3000000">
         <http:request-connection protocol="HTTPS" host="${httpsreqsf.host}" port="${httpsreqsf.port}">
             <tls:context>
@@ -41,5 +39,5 @@ http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/em
             </tls:context>
         </http:request-connection>
     </http:request-config>
-	<api-gateway:autodiscovery apiId="${secure::apiDiscovery.apiId}" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="776a47ff-c2b8-4974-b9aa-a692d8b9722a" flowRef="masterdata-papi-main" />
+    <api-gateway:autodiscovery apiId="${secure::apiDiscovery.apiId}" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="776a47ff-c2b8-4974-b9aa-a692d8b9722a" flowRef="masterdata-papi-main" />
 </mule>

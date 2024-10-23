@@ -19,7 +19,9 @@ now() as DateTime{format: 'dd-MM-yyyy HH:mm:ss'}]]></ee:set-variable>
 				</ee:transform>
 		<ee:transform doc:name="Set Email message" doc:id="21f038b3-e72f-4feb-8333-dd37758af119">
 					<ee:message>
-						<ee:set-payload><![CDATA[%dw 2.0
+					</ee:message>
+					<ee:variables >
+				<ee:set-variable variableName="vars.email" ><![CDATA[%dw 2.0
 output application/java
 ---
 "<!DOCTYPE html>
@@ -39,15 +41,16 @@ output application/java
   </ul>
   <p>We apologize for the inconvenience. Our team has been notified and is working on a solution.</p>
 </body>
-</html>"]]></ee:set-payload>
-					</ee:message>
-					<ee:variables />
+</html>"]]></ee:set-variable>
+			</ee:variables>
 				</ee:transform>
 		<email:send doc:name="Send Email" doc:id="1bb5edcf-3bf5-4677-bce1-8093f2367f4d" config-ref="Email_SMTP" fromAddress="#[p('secure::emailConfig.sender')]" subject="#[vars.title]">
 					<email:to-addresses>
 						<email:to-address value="#[p('secure::emailConfig.receiver')]" />
 					</email:to-addresses>
-					<email:body contentType="text/html" encoding="UTF-8" />
+					<email:body contentType="text/html" encoding="UTF-8" >
+				<email:content ><![CDATA[#[vars.email]]]></email:content>
+			</email:body>
 				</email:send>
 	</sub-flow>
 	<sub-flow name="get-request-sf-connector-subflow" doc:id="bf2b1ff2-26c8-45ea-ac1b-8e288b0d12a6" >

@@ -10,7 +10,7 @@
                 <http:headers>#[vars.outboundHeaders default {}]</http:headers>
             </http:error-response>
         </http:listener>
-        <apikit:router config-ref="masterdata-papi-config" />
+        <apikit:router config-ref="masterdata-papi-config"/>
     </flow>
     <flow name="masterdata-papi-console">
         <http:listener config-ref="masterdata-papi-httpListenerConfig" path="/console/*">
@@ -22,33 +22,33 @@
                 <http:headers>#[vars.outboundHeaders default {}]</http:headers>
             </http:error-response>
         </http:listener>
-        <apikit:console config-ref="masterdata-papi-config" />
+        <apikit:console config-ref="masterdata-papi-config"/>
     </flow>
-    <flow name="delete:\dynaccountdelete:masterdata-papi-config">
-		<flow-ref doc:name="dyn-sf-delete-account-flow" doc:id="97f85c47-b7e1-428d-bfa3-68a81a50bf82" name="dyn-sf-delete-account-flow" />
-    </flow>
-    <flow name="delete:\dyncontactdelete:masterdata-papi-config">
-		<flow-ref doc:name="dyn-sf-delete-contact-flow" doc:id="38c7230c-93f7-4747-b18b-9f00a1566c29" name="dyn-sf-delete-contact-flow" />
-    </flow>
-    <flow name="delete:\sfaccountdelete:masterdata-papi-config">
-		<flow-ref doc:name="sf-dyn-delete-account-flow" doc:id="42573069-da06-413a-bb32-5dce478cbedd" name="sf-dyn-delete-account-flow" />
-    </flow>
-    <flow name="delete:\sfcontactdelete:masterdata-papi-config">
-		<flow-ref doc:name="sf-dyn-delete-contact-flow" doc:id="9ebb9e32-ad29-4b59-9f79-125f753f3a4b" name="sf-dyn-delete-contact-flow" />
-    </flow>
-    <flow name="post:\dynaccount:application\json:masterdata-papi-config">
-		<flow-ref doc:name="dyn-sf-account-flow" doc:id="d867aab4-d843-45fb-93f1-e22da5af9714" name="dyn-sf-account-flow" />
-    </flow>
-    <flow name="post:\dyncontact:application\json:masterdata-papi-config">
-		<flow-ref doc:name="dyn-sf-contact-flow" doc:id="4ac8542a-b389-4fdc-8456-a9f87f2484c5" name="dyn-sf-contact-flow" />
-    </flow>
-    <flow name="post:\sfaccount:application\json:masterdata-papi-config">
-		<flow-ref doc:name="sf-dyn-account-flow" doc:id="e7c3e770-5eee-45ef-b3c0-a8eba027664b" name="sf-dyn-account-flow" />
-    </flow>
-    <flow name="post:\sfcontact:application\json:masterdata-papi-config">
-		<flow-ref doc:name="sf-dyn-contact-flow" doc:id="f99058a2-ff9b-467e-8196-3f4060516664" name="sf-dyn-contact-flow" />
-    </flow>
-    <flow name="post:\sfopportunity:application\json:masterdata-papi-config">
-		<flow-ref doc:name="sf-dyn-opportunity-flow" doc:id="1207ad4c-788c-4aee-bdb7-b8010c39b8ef" name="sf-dyn-opportunity-flow" />
-    </flow>
+	<flow name="delete:\dynaccountdelete:masterdata-papi-config" doc:id="1a6b9dcf-b7cb-4d5c-8c49-d203b62f2fe9" >
+		<flow-ref doc:name="dyn-sf-delete-account-flow" doc:id="32d6c58a-790b-4b23-a846-7f912f7443e7" name="dyn-sf-delete-account-flow" />
+	</flow>
+	<flow name="delete:\dyncontactdelete:masterdata-papi-config" doc:id="5a4b9ea9-789f-40e0-957d-76d22c887c7c" >
+		<flow-ref doc:name="dyn-sf-delete-contact-flow" doc:id="6bf60b98-ff71-4107-8f90-a0711fa345cc" name="dyn-sf-delete-contact-flow" />
+	</flow>
+	<flow name="delete:\sfaccountdelete:masterdata-papi-config" doc:id="c6dd667f-fc9d-4628-adc2-987bc982254d" >
+		<flow-ref doc:name="sf-dyn-delete-account-flow" doc:id="550bf9f8-2215-47b8-aa8e-53e2c585c1ca" name="sf-dyn-delete-account-flow" />
+	</flow>
+	<flow name="delete:\sfcontactdelete:masterdata-papi-config" doc:id="30ab376e-16c1-48bc-b131-61a201981fac" >
+		<flow-ref doc:name="sf-dyn-delete-contact-flow" doc:id="7e8f1eba-e79f-4098-a20c-cf7b69ad62fd" name="sf-dyn-delete-contact-flow" />
+	</flow>
+	<flow name="post:\dynaccount:application\json:masterdata-papi-config" doc:id="e1d2137a-10b2-4012-9d27-ade986034ca7" >
+		<flow-ref doc:name="dyn-sf-account-flow" doc:id="dfc78f0d-610a-4ad6-a65a-8dfa6d0a22fb" name="dyn-sf-account-flow" />
+	</flow>
+	<flow name="post:\dyncontact:application\json:masterdata-papi-config" doc:id="a02a5a1a-526c-4a95-ae25-500bfdc4e168" >
+		<flow-ref doc:name="dyn-sf-contact-flow" doc:id="3c25f9ec-c201-4b9d-a9cd-b9ed0cfb67f3" name="dyn-sf-contact-flow" />
+	</flow>
+	<flow name="post:\sfaccount:application\json:masterdata-papi-config" doc:id="5870c187-3f1f-43d5-bc09-0be27c48a195" >
+		<flow-ref doc:name="sf-dyn-account-flow" doc:id="383798f5-bb67-4b01-bef5-c65848d6de10" name="sf-dyn-account-flow" />
+	</flow>
+	<flow name="post:\sfcontact:application\json:masterdata-papi-config" doc:id="813b5ae8-0941-4d2d-94d0-388f76b3a8c4" >
+		<flow-ref doc:name="sf-dyn-contact-flow" doc:id="a8480281-c5cc-4c84-aa62-a8fbf755cf93" name="sf-dyn-contact-flow" />
+	</flow>
+	<flow name="post:\sfopportunity:application\json:masterdata-papi-config" doc:id="98c7a7e4-513b-4766-8215-aa4a27352a84" >
+		<flow-ref doc:name="sf-dyn-opportunity-flow" doc:id="d6dd7a76-7dea-424f-878e-7b50cc593975" name="sf-dyn-opportunity-flow" />
+	</flow>
 </mule>

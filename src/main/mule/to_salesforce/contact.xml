@@ -23,14 +23,14 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 }]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<try doc:name="Try" doc:id="ace732d2-6640-4803-9181-8a313f530972">
-			<flow-ref doc:name="get-request-sf-connector-subflow" doc:id="0f9f985b-733b-40af-9ecf-3096889a9e8f" name="get-request-sf-connector-subflow" target="contact"/>
-			<error-handler>
-				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="b5fd287d-d3aa-4717-88da-7c12da72742b">
-					<set-variable value="#[false]" doc:name="Set vars.isContactExists" doc:id="9f004f4e-9ef5-41a2-a30e-69057c8c0ad6" variableName="isContactExists" />
-				</on-error-continue>
-			</error-handler>
-		</try>
+		<choice doc:name="Choice" doc:id="56c226c1-123f-4250-8ec2-255204ec61e8" >
+			<when expression="#[isEmpty(vars.uriParam.ID)]">
+				<set-variable value="#[false]" doc:name="Set vars.isContactExists" doc:id="9f004f4e-9ef5-41a2-a30e-69057c8c0ad6" variableName="isContactExists" />
+			</when>
+			<otherwise >
+				<flow-ref doc:name="get-request-sf-connector-subflow" doc:id="0f9f985b-733b-40af-9ecf-3096889a9e8f" name="get-request-sf-connector-subflow" target="contact" />
+			</otherwise>
+		</choice>
 		<ee:transform doc:name="Set vars.condition" doc:id="935e8359-93b1-4a95-8ea8-19c2500c6cdf">
 			<ee:message />
 			<ee:variables>
