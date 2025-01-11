@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
-http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd">
 	<sub-flow name="send-error-mail-subflow" doc:id="31068971-47a1-49a7-982e-03f7fd5c5728" >
 		<ee:transform doc:name="Set vars" doc:id="61430369-f833-4fa6-aa01-62e479916866">
 					<ee:message />
@@ -33,7 +34,7 @@ output application/java
   <p>An error has occurred while setting a new watermark. Please see the details below:</p>
   <ul>
 	<li><strong>Error Message:</strong> " ++ error.description as String ++  "</li>
-    <li><strong>Error Code:</strong> " ++  error.errorMessage.attributes.StatusCode ++ "</li>
+    <li><strong>Error Code:</strong> " ++  (error.errorMessage.attributes.StatusCode default "") ++ "</li>
 	<li><strong>Error Type:</strong> " ++ error.errorType.namespace ++ ":" ++ error.errorType.identifier ++ "</li>    
 	<li><strong>Time of Error:</strong> " ++ vars.currentTime ++ "</li>
   </ul>
@@ -74,7 +75,8 @@ output application/java
 	</sub-flow>
 	<sub-flow name="post-request-sf-connector-subflow" doc:id="367ba2cf-bca0-4061-afd1-1287aebe4f96">
 		<try doc:name="Try" doc:id="d265cde0-a1d2-48b8-9b98-f01cecf0b87e" >
-			<http:request method="POST" doc:name="SalesForce POST Request" doc:id="0c6aef32-9bd7-4b25-8999-7160fa93130d" config-ref="HTTP_Request_configuration_SalesForce" path="#[vars.path]">
+			<until-successful maxRetries="5" doc:name="Until Successful" doc:id="ba0e7659-6e0f-41ff-bb7b-a4c337c6ad8f" >
+				<http:request method="POST" doc:name="SalesForce POST Request" doc:id="0c6aef32-9bd7-4b25-8999-7160fa93130d" config-ref="HTTP_Request_configuration_SalesForce" path="#[vars.path]">
 			<http:body><![CDATA[#[vars.body]]]></http:body>
 			<http:headers><![CDATA[#[output application/java
 ---
@@ -83,6 +85,7 @@ output application/java
 	"client_id" : p('secure::clientIdenforcement.clientId')
 }]]]></http:headers>
 		</http:request>
+			</until-successful>
 			<error-handler>
 				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="970c2bdf-f8b5-4966-8c31-43ab7d6988e2" >
 					<flow-ref doc:name="send-error-mail-subflow" doc:id="8e3e52e1-cdba-439b-a052-7f0b82335291" name="send-error-mail-subflow" />
@@ -186,4 +189,61 @@ output application/java
 			</error-handler>
 		</try>
 	</sub-flow>
+	<sub-flow name="get-request-sp-connector-subflow" doc:id="c13f6db0-468c-4ef9-b98b-cc3ef2f39a8c" >
+		<try doc:name="Try" doc:id="ec476e5f-9e3a-42b7-98a7-54c858f8c7d0" >
+			<until-successful maxRetries="5" doc:name="Until Successful" doc:id="d5fb455b-5253-4721-807c-7ca50d3e5bbd" >
+				<http:request method="GET" doc:name="SharePoint GET Request" doc:id="21bced6e-4ecb-4db4-b8c0-92613aab7c72" config-ref="HTTP_Request_configuration_SharePoint" path="#[vars.path]">
+				<http:body><![CDATA[#[vars.body]]]></http:body>
+				<http:headers><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('secure::clientIdenforcement.clientSecret'),
+	"client_id" : p('secure::clientIdenforcement.clientId')
+}]]]></http:headers>
+				<http:uri-params><![CDATA[#[vars.uriParam]]]></http:uri-params>
+				<http:query-params><![CDATA[#[vars.queryParam]]]></http:query-params>
+			</http:request>
+			</until-successful>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="d90209e2-61ee-4c5c-932f-61f0b34f3927" >
+					<flow-ref doc:name="send-error-mail-subflow" doc:id="e91a91a0-ffa7-4ad1-8695-f637b926bdc2" name="send-error-mail-subflow" />
+				</on-error-propagate>
+			</error-handler>
+		</try>
+	</sub-flow>
+	<flow name="query-call-retrieve-data-flow" doc:id="ff1cee79-2ae8-4ef8-84a8-0c63cedee8f8" >
+		<ee:transform doc:name="POST Query Call Request vars" doc:id="0f29e588-9f69-4d6b-ba55-819ba63d0d1e" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable variableName="path" ><![CDATA[payload.call]]></ee:set-variable>
+				<ee:set-variable variableName="body" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"query": payload.query
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Set vars.condition" doc:id="976a7f06-250d-4f85-a8af-54ebb4b47d6e" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable variableName="condition" ><![CDATA[%dw 2.0
+output application/json
+---
+if(payload.call == "sfquerycall") "post-request-sf-connector-subflow"
+else "post-request-dyn-connector-subflow"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="Route to flow" doc:id="2c9f020e-5ae5-46f6-ae01-9f50333009b0" name="#[vars.condition]" />
+	</flow>
+	<flow name="get-request-sp-in-period-connector-subflow" doc:id="42f862d7-2cf7-46a4-8111-4dc9438e8c87" >
+		<http:request method="GET" doc:name="SharePoint GET Request /queryinperiod" doc:id="0d152f97-79d5-4075-84f0-80c00d946ffb" config-ref="HTTP_Request_configuration_SharePoint" path="/queryinperiod" >
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('secure::clientIdenforcement.clientSecret'),
+	"client_id" : p('secure::clientIdenforcement.clientId')
+}]]]></http:headers>
+		</http:request>
+	</flow>
 </mule>

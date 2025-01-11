@@ -18,6 +18,11 @@ httpsreqdyn:
   host: 'localhost'
   port: '8082'
   
+httpsreqsp:
+  path: '/api'
+  host: 'localhost'
+  port: '8084'  
+  
 keystore:
   path: 'sapidatabase.jks'
   alias: 'mule'

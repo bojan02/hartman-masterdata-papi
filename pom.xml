@@ -2,16 +2,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>b2364939-ddcb-4a64-a2ca-16799a22819a</groupId>
+	<groupId>43a45f61-92d2-4c3e-8bcf-a0ba6d792d89</groupId>
 	<artifactId>masterdata-papi</artifactId>
 	<version>1.0.0-${build.version}</version>
 	<packaging>mule-application</packaging>
 
-	<name>masterdata-papi</name>
+	<name>hartman-masterdata-papi</name>
 	<parent>
-		<groupId>b2364939-ddcb-4a64-a2ca-16799a22819a</groupId>
+		<groupId>43a45f61-92d2-4c3e-8bcf-a0ba6d792d89</groupId>
 		<artifactId>parent-pom</artifactId>
-		<version>1.0.9</version>
+		<version>1.0.0</version>
 	</parent>
 
 	<properties>
@@ -19,7 +19,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<app.runtime>4.7.4</app.runtime>
-		<mule.maven.plugin.version>4.3.1</mule.maven.plugin.version>
+		<mule.maven.plugin.version>4.3.0</mule.maven.plugin.version>
 		<build.version>SNAPSHOT</build.version>
 		<munit.version>2.3.11</munit.version>
 	</properties>
@@ -77,6 +77,12 @@
 			<id>integrationmatters-repo-release</id>
 			<url>https://maven.integrationmatters.com/release</url>
 		</repository>
+		<repository>
+			<id>anypoint-exchange-v3</id>
+			<name>Anypoint Exchange V3</name>
+			<url>https://maven.anypoint.mulesoft.com/api/v3/maven</url>
+			<layout>default</layout>
+		</repository>
 	</repositories>
 
 	<dependencies>
@@ -109,9 +115,9 @@
 			<classifier>mule-plugin</classifier>
 		</dependency>
 		<dependency>
-			<groupId>b2364939-ddcb-4a64-a2ca-16799a22819a</groupId>
+			<groupId>43a45f61-92d2-4c3e-8bcf-a0ba6d792d89</groupId>
 			<artifactId>masterdata-papi</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.2</version>
 			<classifier>raml</classifier>
 			<type>zip</type>
 		</dependency>

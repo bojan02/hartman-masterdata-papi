@@ -80,4 +80,73 @@ else "put-account-dyn-sf-flow"]]></ee:set-variable>
 			</otherwise>
 		</choice>
 	</flow>
+	<flow name="sp-sf-post-account-order-flow" doc:id="267213e5-18ea-4206-8bb7-df307eaa3b0e" >
+		<scheduler doc:name="Scheduler" doc:id="01376bd8-0670-457c-aeb9-f4a475f0a324" >
+			<scheduling-strategy >
+				<cron expression="0 0 7,19 * * ?" timeZone="Europe/Belgrade" />
+			</scheduling-strategy>
+		</scheduler>
+		<logger level="INFO" doc:name="Log initial upload of accounts and orders started" doc:id="4ba36666-e075-4e2d-b62c-f9bd44df1de6" message='#["Initial upload of accounts and orders started"]'/>
+		<ee:transform doc:name="GET Accounts SP Request vars" doc:id="b3ba7c8d-bc6c-45e7-af10-55ad8c6eb106" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable variableName="path" ><![CDATA["/account"]]></ee:set-variable>
+				<ee:set-variable variableName="body" ><![CDATA[payload]]></ee:set-variable>
+				<ee:set-variable variableName="queryParam" ><![CDATA[output application/java
+---
+{
+}]]></ee:set-variable>
+				<ee:set-variable variableName="uriParam" ><![CDATA[output application/java
+---
+{
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="get-request-sp-connector-subflow" doc:id="fd146d39-e2cc-4ab5-8171-c64bb4d97521" name="get-request-sp-connector-subflow" />
+		<ee:transform doc:name="POST Account SF Request vars" doc:id="935875eb-4642-4230-b583-82c4d9e2e35b">
+			<ee:message />
+			<ee:variables>
+				<ee:set-variable variableName="path"><![CDATA["/accountpagination"]]></ee:set-variable>
+				<ee:set-variable variableName="body"><![CDATA[payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="post-request-sf-connector-subflow" doc:id="f435d80d-a8b3-4713-be71-58591e264586" name="post-request-sf-connector-subflow" />
+		<ee:transform doc:name="Wait 20 seconds" doc:id="d38fec80-8685-464d-9e43-e1d4e293cce3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::Runtime
+output application/json
+---
+{
+	"Message": "Waiting 20 seconds..."
+} wait 20000]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Log 20 seconds" doc:id="664a40ff-0e41-4011-869c-3dd45e0505a4" message='#["20 seconds passed"]'/>
+		<ee:transform doc:name="GET Orders SP Request vars" doc:id="801b7be9-6cc9-42e8-ab4d-ddd43959545a" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable variableName="path" ><![CDATA["/order"]]></ee:set-variable>
+				<ee:set-variable variableName="body" ><![CDATA[payload]]></ee:set-variable>
+				<ee:set-variable variableName="queryParam" ><![CDATA[output application/java
+---
+{
+}]]></ee:set-variable>
+				<ee:set-variable variableName="uriParam" ><![CDATA[output application/java
+---
+{
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="get-request-sp-connector-subflow" doc:id="71b9c2cb-b0ae-4805-b61a-4d075f6f3d99" name="get-request-sp-connector-subflow" />
+		<ee:transform doc:name="POST Order SF Request vars" doc:id="73e006d6-f058-4804-a4ae-aadad273c5f8" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable variableName="path" ><![CDATA["/orderpagination"]]></ee:set-variable>
+				<ee:set-variable variableName="body" ><![CDATA[payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="post-request-sf-connector-subflow" doc:id="e147ca09-f992-4e08-88bc-57eca1013489" name="post-request-sf-connector-subflow" />
+		<logger level="INFO" doc:name="Log initial upload of accounts and orders ended" doc:id="69429e41-479e-43b2-9fec-6e9a73895e83" message='#["Initial upload of accounts and orders ended"]' />
+	</flow>
 </mule>

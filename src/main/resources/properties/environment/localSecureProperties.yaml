@@ -3,8 +3,8 @@ certificate:
   password: '![Ymlc260Y7q/sDOeYQzXwqw==]'
   
 clientIdenforcement:
-  clientId: '![kVEqE7Qr86XoHlJGLU0UtIRA9LI3qFMvEd63SK4e3WCBf2jFgdY3tdQ892QJSpg4]'
-  clientSecret: '![DOPO0ZtBPjmlBul7P5BzYT4+mBPKFbiBFhOTJcNhunfvZ+aHOCv+4HiD5oUOsylN]'
+  clientId: '![xItuf3g6MK2zCxRNv2cCo9IRG9NmedKX+cXdt1jhUS3DXN9YZgmGaM605rQT1mkG]'
+  clientSecret: '![Ip/i8EdTY4GNJqpgMyhV6+RMcHqJpxz5kzhhfjo9xqNAE/KYsPfpTf+BgHqmrH8W]'
   
 emailConfig:
   sender: '![nzjVPRJXdRprvH9JHs8yYlXFDEeCknFqm9lub45PX6c=]'
@@ -12,4 +12,4 @@ emailConfig:
   receiver: '![RKzaRifrxvMnVfwjqTVd1XvyxelLRUvgFB/tijqe0yg=]'
   
 apiDiscovery:
-  apiId: '![Ot6mRuyMsMj7qbw+xPsFpg==]'
+  apiId: '![VdhOGkzrdQvBtorKm4QvuQ==]'

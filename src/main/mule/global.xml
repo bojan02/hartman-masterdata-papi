@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:njams="http://www.mulesoft.org/schema/mule/njams" xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=" http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd  http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd  http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/njams http://www.mulesoft.org/schema/mule/njams/current/mule-njams.xsd http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd">
-    <apikit:config name="masterdata-papi-config" api="resource::b2364939-ddcb-4a64-a2ca-16799a22819a:masterdata-papi:1.0.0:raml:zip:masterdata-papi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <apikit:config name="masterdata-papi-config" api="resource::43a45f61-92d2-4c3e-8bcf-a0ba6d792d89:masterdata-papi:1.0.2:raml:zip:masterdata-papi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="2c6afb70-fa57-460e-9dc6-65ffdadb992f">
         <email:smtp-connection host="smtp.gmail.com" user="${secure::emailConfig.sender}" password="${secure::emailConfig.password}">
             <email:properties>
@@ -24,6 +24,14 @@
             </tls:context>
         </http:listener-connection>
     </http:listener-config>
+    <http:request-config name="HTTP_Request_configuration_SharePoint" doc:name="HTTP Request configuration" doc:id="c3c020c1-1491-49a5-811b-88b53858ba20" basePath="${httpsreqsp.path}" responseTimeout="3000000">
+        <http:request-connection protocol="HTTPS" host="${httpsreqsp.host}" port="${httpsreqsp.port}">
+            <tls:context>
+                <tls:trust-store insecure="true" />
+                <tls:key-store path="${keystore.path}" alias="${keystore.alias}" keyPassword="${secure::certificate.keypassword}" password="${secure::certificate.keypassword}" />
+            </tls:context>
+        </http:request-connection>
+    </http:request-config>
     <configuration-properties doc:name="API Properties" doc:id="12b9d91d-d82a-4a9e-89a8-7d9a2afa38d1" file="properties/apiProperties.yaml" />
     <configuration-properties doc:name="Generated Maven Properties" doc:id="12b9d91d-d82a-4a9e-89a8-7d9a2afa38d1" file="properties/generatedProperties.yaml" />
     <configuration-properties doc:name="Environment properties" doc:id="2a5a8ef5-06ca-40dc-a2c9-7daadd7d0b45" file="properties/environment/${mule.env}Properties.yaml" />
@@ -31,7 +39,7 @@
     <configuration doc:name="Global Error Handler Configuration" doc:id="debb8bec-9ca7-452e-afb3-badc3f2df3ab" defaultErrorHandler-ref="globalErrorHandler" />
     <configuration-properties doc:name="Log properties" doc:id="49af3598-2447-4b30-9b55-b9b934b5abef" file="properties/logProperties.yaml" />
     <secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="8b4c63ef-d652-4b36-8108-2143c0410f65" file="properties/environment/${mule.env}SecureProperties.yaml" key="${mule.key}" />
-    <http:request-config name="HTTP_Request_configuration_dynamics" doc:name="HTTP Request configuration" doc:id="6dd760c2-a262-4e8c-ba60-35928b7b9cba" basePath="${httpsreqdyn.path}" responseTimeout="3000000">
+    <http:request-config name="HTTP_Request_configuration_dynamics" doc:name="HTTP Request configuration" doc:id="6dd760c2-a262-4e8c-ba60-35928b7b9cba" basePath="${httpsreqdyn.path}">
         <http:request-connection protocol="HTTPS" host="${httpsreqdyn.host}" port="${httpsreqdyn.port}">
             <tls:context>
                 <tls:trust-store insecure="true" />
@@ -40,11 +48,4 @@
         </http:request-connection>
     </http:request-config>
     <api-gateway:autodiscovery apiId="${secure::apiDiscovery.apiId}" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="776a47ff-c2b8-4974-b9aa-a692d8b9722a" flowRef="masterdata-papi-main" />
-	<njams:inline-configuration-config name="NJAMS_Inline_configuration" doc:name="NJAMS Inline configuration" doc:id="3c17c0ee-581a-46b9-8589-33f009057f5c" deployment="masterdata-papi" appName="1.0.0" >
-		<njams:communication-protocol >
-			<njams:http-instance host="os0146" port="8080" path="njams" dataProviderPrefix="sdk" >
-				<njams:authentication user="admin" password="admin" />
-			</njams:http-instance>
-		</njams:communication-protocol>
-	</njams:inline-configuration-config>
 </mule>

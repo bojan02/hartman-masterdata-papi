@@ -26,3 +26,14 @@ fun sfAccountMapping(email: String, phone: String) = {
   "Active__c": "Yes",
   "ExternalId__c": "fefde7b6-d774-ef11-a670-002248a3d295"
 }
+
+fun sfAccountMappingId(id: String, email: String, phone: String) = {
+  "Id": id,
+  "Name": "Monica d.o.o.",
+  "Email__c": email,
+  "Phone": phone,
+  "CustomerPriority__c": "Medium",
+  "SLAExpirationDate__c": (now() + |P90D|) as String{"format": "yyyy-MM-dd"},
+  "Active__c": "Yes",
+  "ExternalId__c": "fefde7b6-d774-ef11-a670-002248a3d295"
+}

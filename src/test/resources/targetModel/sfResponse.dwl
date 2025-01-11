@@ -4,7 +4,7 @@ fun sfAccount(email: String, phone: String) = {
   "accountName": "Monica d.o.o.",
   "email": email,
   "phone": phone,
-  "customerPriority": "Low",
+  "customerPriority": "Medium",
   "slaExpirationDate": (now() + |P90D|) as String{"format": "yyyy-MM-dd"},
   "active": "Yes",
   "sfId": "001Qy00000UIRIsIAP",
